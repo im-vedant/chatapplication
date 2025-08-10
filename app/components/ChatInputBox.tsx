@@ -107,19 +107,19 @@ const ChatInputBox: React.FC<ChatInputBoxProps> = ({
       const uuid = uuidv4();
       try {
         // Use the hook to get upload URL
-        const { uploadUrl } = await fetchUploadUrlMutation.mutateAsync({
+        const { url } = await fetchUploadUrlMutation.mutateAsync({
           filename: uuid,
           contentType: f.type
         });
-        
-        const uploadRes = await fetch(uploadUrl, {
+
+        const uploadRes = await fetch(url.toString(), {
           method: 'PUT',
           headers: { 'Content-Type': f.type },
           body: f
         });
         
         if (!uploadRes.ok) throw new Error('Upload failed');
-        return { url: uploadUrl, key: uuid, name: f.name, type: f.type, uploading: false };
+        return { url: url.toString(), key: uuid, name: f.name, type: f.type, uploading: false };
       } catch (err) {
         return { url: '', key: uuid, name: f.name, type: f.type, uploading: false, error: (err instanceof Error ? err.message : 'Unknown error') };
       }
@@ -177,7 +177,7 @@ const ChatInputBox: React.FC<ChatInputBoxProps> = ({
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/*,application/pdf"
+            accept="application/pdf,.pdf"
             multiple
             onChange={handleFileChange}
             disabled={loading || uploading || disabled}
@@ -198,7 +198,7 @@ const ChatInputBox: React.FC<ChatInputBoxProps> = ({
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Attach files (images, PDFs)</p>
+              <p>Attach PDF files</p>
             </TooltipContent>
           </Tooltip>
 

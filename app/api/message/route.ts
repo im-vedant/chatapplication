@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { NextRequest, NextResponse } from 'next/server';
 import { generateGeminiResponse } from '@/lib/gemini';
+import { processMessageAttachments } from '@/lib/pdf-processor';
 
 
 export async function GET(req: NextRequest) {
@@ -53,6 +54,17 @@ export async function POST(req: NextRequest) {
         role: role as any 
       },
     });
+    console.log(`Created message ${message.id} for chat ${chatId}`, files.toLocaleString());
+    // Process PDF attachments if any
+    if (files && files.length > 0) {
+      try {
+        console.log(`Processing ${files.length} file attachments for message ${message.id}:`, files);
+        await processMessageAttachments(chatId.toString(), files);
+      } catch (error) {
+        console.error('Failed to process PDF attachments:', error);
+        // Continue even if PDF processing fails
+      }
+    }
 
     // Check if this is the first message in the chat and auto-generate a name
     const messageCount = await prisma.message.count({

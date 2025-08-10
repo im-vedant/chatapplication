@@ -1,16 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-
-const s3 = new S3Client({
-    region: "us-east-1",
-    endpoint: "http://localhost:9000",
-    forcePathStyle: true,
-    credentials: {
-        accessKeyId: "minioadmin",
-        secretAccessKey: "minioadmin",
-    },
-});
+import { s3Client, BUCKET_NAME } from "@/lib/minio-client";
 
 export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
@@ -21,15 +12,13 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ error: "Missing filename or contentType" }, { status: 400 });
     }
 
-
-    const bucket = process.env.MINIO_BUCKET || "uploads";
     const command = new PutObjectCommand({
-        Bucket: bucket,
+        Bucket: BUCKET_NAME,
         Key: fileName,
         ContentType: contentType,
     });
 
-    const signedUrl = await getSignedUrl(s3, command, { expiresIn: 60 });
+    const signedUrl = await getSignedUrl(s3Client, command, { expiresIn: 60 });
 
     return NextResponse.json({ url: signedUrl });
 }

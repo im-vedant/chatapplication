@@ -11,8 +11,7 @@ export interface GenerateNameResponse {
 }
 
 export interface UploadUrlResponse {
-  uploadUrl: string;
-  fileUrl: string;
+url : String
 }
 
 // Generate chat name using Gemini API
